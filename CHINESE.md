@@ -9,6 +9,10 @@ AlipayQRHook
 ------
 这是一个已学习为目的的工程，请不要擅自用于商业使用，产生的问题概不负责！！！
 
+演示
+------
+(https://github.com/wayu002/AlipayQRHook/blob/master/record.gif)
+
 使用
 ------
 1. 手机安装XPosed或VirtualXPosed.（推荐使用VirtualXPosed，手机免root，演示视频使用的VirtualXPosed）
