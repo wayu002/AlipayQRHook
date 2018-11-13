@@ -11,7 +11,7 @@ AlipayQRHook
 
 演示
 ------
-(https://github.com/wayu002/AlipayQRHook/blob/master/record.gif)
+![img](https://github.com/wayu002/AlipayQRHook/blob/master/record.gif)
 
 使用
 ------
