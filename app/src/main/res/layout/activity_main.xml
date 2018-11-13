@@ -1,19 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context="wy.experiment.xposed.MainActivity">
 
-    <TextView
+    <EditText
+        android:id="@+id/qr_memo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:textSize="13sp"
+        android:hint="请输入备注"
+        android:textColor="@android:color/black"/>
+    <EditText
+        android:id="@+id/qr_money"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:layout_marginTop="40dp"
+        android:textSize="13sp"
+        android:inputType="numberDecimal"
+        android:hint="请输入金额"
+        android:textColor="@android:color/black"/>
+    <Button
+        android:id="@+id/gen_qr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
-
-</android.support.constraint.ConstraintLayout>
+        android:padding="10dp"
+        android:textSize="13sp"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center"
+        android:text="生成二维码"/>
+</LinearLayout>
