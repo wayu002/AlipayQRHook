@@ -11,6 +11,8 @@ Warning
 ------
 This is a project that has been studied for purpose. Please do not use it for commercial use！！！
 
+[Demonstration](https://github.com/wayu002/AlipayQRHook/blob/master/record.gif)
+
 Usage
 ------
 1. Install XPosed or VirtualXposed.
