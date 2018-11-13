@@ -13,8 +13,7 @@ This is a project that has been studied for purpose. Please do not use it for co
 
 Demonstration
 ------
-![image]
-(https://github.com/wayu002/AlipayQRHook/blob/master/record.gif)
+![img](https://github.com/wayu002/AlipayQRHook/blob/master/record.gif)
 
 Usage
 ------
