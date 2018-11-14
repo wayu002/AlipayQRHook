@@ -1,5 +1,7 @@
 [中文说明](https://github.com/wayu002/AlipayQRHook/blob/master/CHINESE.md)
 
+[Refer](https://www.52pojie.cn/thread-821871-1-1.html)
+
 AlipayQRHook
 -------
 
