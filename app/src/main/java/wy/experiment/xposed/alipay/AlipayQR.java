@@ -1,5 +1,6 @@
 package wy.experiment.xposed.alipay;
 
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -25,6 +26,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import wy.experiment.xposed.ICracker;
 import wy.experiment.xposed.util.QRTool;
 import wy.experiment.xposed.util.XPConstant;
 
@@ -39,7 +41,6 @@ public class AlipayQR {
     private ClassLoader mLoader;
     private Object mCollectMoneyRpc;
     private QRCodeGenerateCallback mCallback;
-    private String mPayUrl;
 
     public interface QRCodeGenerateCallback {
         void codeGenerated(boolean success, String path);
@@ -51,42 +52,7 @@ public class AlipayQR {
 
     public void handleLoadPackage(ClassLoader loader) throws Throwable {
         mLoader = loader;
-        //hookQRActivity();
         hookAppContext();
-    }
-
-    private void hookQRActivity(){
-        findAndHookMethod(XPConstant.QR_ACTIVITY_CLASS, mLoader, "onCreate", Bundle.class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                super.afterHookedMethod(param);
-                Field field = param.thisObject.getClass().getDeclaredField("c");
-                field.setAccessible(true);
-                String userId = (String) field.get(param.thisObject);
-                Log.d(TAG, "userID = " + userId);
-                createQRPayURI(userId, (ContextWrapper) param.thisObject);
-            }
-        });
-    }
-
-    private void createQRPayURI(String userId, ContextWrapper wrapper){
-        Log.d(TAG, "hookQRPayUri: userId: " + userId);
-        if(TextUtils.isEmpty(userId)){
-            return;
-        }
-        try {
-            Class<?> securityClass = mLoader.loadClass(XPConstant.SECURITY_CLASS);
-            Method encryptMethod = securityClass.getDeclaredMethod("encrypt", ContextWrapper.class, String.class, String.class);
-            encryptMethod.setAccessible(true);
-            String uri = (String) encryptMethod.invoke(null, wrapper, userId, "payee_collectorid");
-            StringBuilder sb = new StringBuilder("https://d.alipay.com/i/index.htm?b=RECEIVE_AC");
-            sb.append("&s=").append("online");
-            sb.append("&u=").append(uri);
-            Log.d(TAG, "gen online uri: " + sb.toString());
-            mPayUrl = sb.toString();
-        } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
     }
 
     private void hookAppContext(){
@@ -131,7 +97,7 @@ public class AlipayQR {
 
 
     public void generateQRCode(Bundle data){
-        Log.d(TAG, "generateQRCode");
+        Log.d(TAG, "generateQRCode: ");
         if(mCollectMoneyRpc == null){
             notifyFailed();
             return;
