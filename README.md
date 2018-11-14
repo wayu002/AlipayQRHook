@@ -22,7 +22,7 @@ Usage
 1. Install XPosed or VirtualXposed.
 2. Clone and build this project, generate app-debug.apk.
 3. Install Alipay and app-debug.apk in the XPosed or VirtualXposed.
-4. Open Alipay, and navigate to "Collect" page and back to home. (In order to get information to generate QR code URL)
+4. Open Alipay.
 5. Open the AlipayQRHook app, complete the memo and money input, click button to generate QR code.
 6. If everything is ok, app will pop up toast to remind you where the QR code is generated.
 7. By default, the QR code is generate in "/sdcard/xpcracker".
