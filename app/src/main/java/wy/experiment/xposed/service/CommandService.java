@@ -39,6 +39,7 @@ public class CommandService extends Service {
         private WeakReference<CommandService> mParentService;
         private Messenger mAlipayClient;
         private Messenger mTestClient;
+        private Messenger mWeChatClient;
 
         public MessengerHandler(CommandService service) {
             mParentService = new WeakReference<>(service);
@@ -53,22 +54,36 @@ public class CommandService extends Service {
                 case XPConstant.TEST_JOIN:
                     testAppJoin(msg.replyTo);
                     break;
-                case XPConstant.ALI_QR_COMPLETE:
+                case XPConstant.WE_JOIN:
+                    weChatProcessJoin(msg.replyTo);
+                    break;
+                case XPConstant.MSG_QR_COMPLETE:
                     alipayQRComplete(msg);
                     break;
                 case XPConstant.ALI_GENERATE_QR:
-                    alipayGenQR(msg);
+                    genQR(msg, true);
+                    break;
+                case XPConstant.WE_GENERATE_QR:
+                    genQR(msg, false);
                     break;
                 default:
                     super.handleMessage(msg);
             }
         }
 
-        private void alipayGenQR(Message msg) {
+        private void weChatProcessJoin(Messenger replyTo) {
+            mWeChatClient = replyTo;
+        }
+
+        private void genQR(Message msg, boolean isAlipay) {
             try {
                 Message clone = Message.obtain();
                 clone.copyFrom(msg);
-                mAlipayClient.send(clone);
+                if(isAlipay) {
+                    mAlipayClient.send(clone);
+                }else{
+                    mWeChatClient.send(clone);
+                }
             } catch (RemoteException e) {
                 Log.e(TAG, e.getMessage());
             }

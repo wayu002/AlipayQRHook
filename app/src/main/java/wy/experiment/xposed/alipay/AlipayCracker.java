@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,6 +17,9 @@ import java.lang.ref.WeakReference;
 
 import de.robv.android.xposed.XC_MethodHook;
 import wy.experiment.xposed.ICracker;
+import wy.experiment.xposed.IQR;
+import wy.experiment.xposed.MessengerHandler;
+import wy.experiment.xposed.QRCodeGenerateCallback;
 import wy.experiment.xposed.util.QRTool;
 import wy.experiment.xposed.util.XPConstant;
 
@@ -25,7 +29,7 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
  * Created by wy on 2018/11/13.
  */
 
-public class AlipayCracker implements ICracker, AlipayQR.QRCodeGenerateCallback {
+public class AlipayCracker implements ICracker, QRCodeGenerateCallback {
     private static final String TAG = "AlipayCracker";
     private boolean mIsLoaded = false;
     private Messenger mService;
@@ -33,7 +37,7 @@ public class AlipayCracker implements ICracker, AlipayQR.QRCodeGenerateCallback 
     private Context mAlipayContext;
     private ClassLoader mLoader;
     private static AlipayCracker _instance;
-    private AlipayQR mQRCode;
+    private IQR mQRCode;
 
     public static AlipayCracker instance() {
         if (_instance == null) {
@@ -47,7 +51,7 @@ public class AlipayCracker implements ICracker, AlipayQR.QRCodeGenerateCallback 
     }
 
     private AlipayCracker(){
-        mReplyMessenger = new Messenger(new AlipayMessengerHandler(this));
+        mReplyMessenger = new Messenger(new MessengerHandler(this));
     }
 
     @Override
@@ -63,6 +67,11 @@ public class AlipayCracker implements ICracker, AlipayQR.QRCodeGenerateCallback 
     @Override
     public boolean isReadyForUse() {
         return mIsLoaded;
+    }
+
+    @Override
+    public IQR getQR() {
+        return mQRCode;
     }
 
     private void hookStartCommandService(ClassLoader loader){
@@ -86,8 +95,6 @@ public class AlipayCracker implements ICracker, AlipayQR.QRCodeGenerateCallback 
             boolean connectSuccess;
             Intent service = new Intent();
             service.setClassName("wy.experiment.xposed", "wy.experiment.xposed.service.CommandService");
-            // start service first
-            mAlipayContext.startService(service);
 
             // bind service
             connectSuccess = mAlipayContext.bindService(service, mConnection, Context.BIND_AUTO_CREATE);
@@ -122,44 +129,7 @@ public class AlipayCracker implements ICracker, AlipayQR.QRCodeGenerateCallback 
     };
 
     @Override
-    public void codeGenerated(boolean success, String path) {
-        Message msg = Message.obtain(null, XPConstant.ALI_QR_COMPLETE);
-        Bundle data = new Bundle();
-        data.putBoolean(XPConstant.QR_SUCCESS, success);
-        if(success){
-            data.putString(XPConstant.QR_PATH, path);
-        }
-        msg.setData(data);
-        try {
-            mService.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static class AlipayMessengerHandler extends Handler {
-        private WeakReference<AlipayCracker> mCracker;
-
-        AlipayMessengerHandler(AlipayCracker cracker){
-            mCracker = new WeakReference<>(cracker);
-        }
-
-        @Override
-        public void handleMessage(Message msg) {
-            if(mCracker.get() == null || !mCracker.get().isReadyForUse()){
-                Log.e(TAG, "AlipayCracker is died");
-                return;
-            }
-            switch (msg.what){
-                case XPConstant.ALI_GENERATE_QR:
-                    Log.d(TAG, "receive ALI_GENERATE_QR");
-                    if(mCracker.get() != null && mCracker.get().mQRCode != null){
-                        mCracker.get().mQRCode.generateQRCode(msg.getData());
-                    }
-                    break;
-                default:
-                    super.handleMessage(msg);
-            }
-        }
+    public void qrCodeGenerated(boolean success, String path) {
+        QRTool.instance().sendQRComplete(success, path, mService);
     }
 }

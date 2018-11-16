@@ -14,6 +14,7 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -31,8 +32,10 @@ public class MainActivity extends Activity {
     EditText mEditMemo;
     @BindView(R.id.qr_money)
     EditText mEditeMoney;
-    @BindView(R.id.gen_qr)
-    Button mGenQR;
+    @BindView(R.id.ali_gen_qr)
+    Button mAliGenQR;
+    @BindView(R.id.we_gen_qr)
+    Button mWeGenQR;
     private Messenger mService;
     private Bitmap mDefaultIcon;
     private Messenger mReplyMessenger;
@@ -43,7 +46,8 @@ public class MainActivity extends Activity {
         Log.d(TAG, "onCreate");
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        mGenQR.setEnabled(false);
+        mAliGenQR.setEnabled(false);
+        mWeGenQR.setEnabled(false);
         Intent service = new Intent();
         service.setClassName(this, "wy.experiment.xposed.service.CommandService");
         bindService(service, mConnection, BIND_AUTO_CREATE);
@@ -57,8 +61,8 @@ public class MainActivity extends Activity {
         unbindService(mConnection);
     }
 
-    @OnClick(R.id.gen_qr)
-    public void genQR(){
+    @OnClick({R.id.ali_gen_qr, R.id.we_gen_qr})
+    public void genQR(View view){
         if(TextUtils.isEmpty(mEditMemo.getText().toString())){
             Toast.makeText(this, "备注不能为空", Toast.LENGTH_SHORT).show();
             return;
@@ -69,7 +73,12 @@ public class MainActivity extends Activity {
             data.putString(XPConstant.QR_DES, mEditMemo.getText().toString());
             data.putFloat(XPConstant.QR_MONEY, money);
             data.putParcelable(XPConstant.QR_ICON, mDefaultIcon);
-            Message msg = Message.obtain(null, XPConstant.ALI_GENERATE_QR);
+            Message msg;
+            if(view.getId() == R.id.ali_gen_qr){
+                msg = Message.obtain(null, XPConstant.ALI_GENERATE_QR);
+            }else {
+                msg = Message.obtain(null, XPConstant.WE_GENERATE_QR);
+            }
             msg.setData(data);
             mService.send(msg);
         }catch (NumberFormatException e){
@@ -80,6 +89,7 @@ public class MainActivity extends Activity {
         }
     }
 
+
     private ServiceConnection mConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -89,7 +99,8 @@ public class MainActivity extends Activity {
             try {
                 msg.replyTo = mReplyMessenger;
                 mService.send(msg);
-                mGenQR.setEnabled(true);
+                mAliGenQR.setEnabled(true);
+                mWeGenQR.setEnabled(true);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -98,7 +109,7 @@ public class MainActivity extends Activity {
         @Override
         public void onServiceDisconnected(ComponentName name) {
             Log.d(TAG, "onServiceDisconnected");
-            mGenQR.setEnabled(false);
+            mAliGenQR.setEnabled(false);
         }
     };
 
@@ -115,7 +126,7 @@ public class MainActivity extends Activity {
                 return;
             }
             switch (msg.what){
-                case XPConstant.ALI_QR_COMPLETE:
+                case XPConstant.MSG_QR_COMPLETE:
                     boolean success = msg.getData().getBoolean(XPConstant.QR_SUCCESS, false);
                     if(!success){
                         Toast.makeText(mActivity.get(), "生成二维码失败", Toast.LENGTH_SHORT).show();

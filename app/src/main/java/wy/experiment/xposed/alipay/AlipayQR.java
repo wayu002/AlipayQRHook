@@ -27,6 +27,8 @@ import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import wy.experiment.xposed.ICracker;
+import wy.experiment.xposed.IQR;
+import wy.experiment.xposed.QRCodeGenerateCallback;
 import wy.experiment.xposed.util.QRTool;
 import wy.experiment.xposed.util.XPConstant;
 
@@ -36,23 +38,33 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
  * Created by wy on 2018/11/13.
  */
 
-public class AlipayQR {
+public class AlipayQR implements IQR {
     private static final String TAG = "AlipayQR";
     private ClassLoader mLoader;
     private Object mCollectMoneyRpc;
     private QRCodeGenerateCallback mCallback;
 
-    public interface QRCodeGenerateCallback {
-        void codeGenerated(boolean success, String path);
-    }
-
     public AlipayQR(QRCodeGenerateCallback callback){
         mCallback = callback;
     }
 
-    public void handleLoadPackage(ClassLoader loader) throws Throwable {
+    public void handleLoadPackage(ClassLoader loader) {
         mLoader = loader;
         hookAppContext();
+    }
+
+    @Override
+    public void generateQRCode(String desc, float money, Bitmap userIcon) {
+        Log.d(TAG, "generateQRCode: ");
+        if(mCollectMoneyRpc == null){
+            notifyFailed();
+            return;
+        }
+        if(TextUtils.isEmpty(desc) || money == 0f || userIcon == null){
+            notifyFailed();
+        }else{
+            asyncSetQRMoney(desc, money, userIcon);
+        }
     }
 
     private void hookAppContext(){
@@ -92,23 +104,6 @@ public class AlipayQR {
             mCollectMoneyRpc = getCollectMoneyMethod.invoke(rpcServiceInstance, collectMoneyRpcClazz);
         }catch (Exception e){
             Log.e(TAG, e.getMessage());
-        }
-    }
-
-
-    public void generateQRCode(Bundle data){
-        Log.d(TAG, "generateQRCode: ");
-        if(mCollectMoneyRpc == null){
-            notifyFailed();
-            return;
-        }
-        String des = data.getString(XPConstant.QR_DES, null);
-        float money = data.getFloat(XPConstant.QR_MONEY, 0f);
-        Bitmap iconBmp = data.getParcelable(XPConstant.QR_ICON);
-        if(TextUtils.isEmpty(des) || money == 0f || iconBmp == null){
-            notifyFailed();
-        }else{
-            asyncSetQRMoney(des, money, iconBmp);
         }
     }
 
@@ -164,7 +159,7 @@ public class AlipayQR {
             return;
         }
         String fileName = "" + System.currentTimeMillis() + ".jpeg";
-        String filePath = saveImage(qrImage, fileName);
+        String filePath = QRTool.instance().saveImage(qrImage, fileName, "Alipay", 0);
         qrImage.recycle();
         notifySuccess(filePath);
     }
@@ -194,25 +189,6 @@ public class AlipayQR {
                 return convertBitmap(result);
             }
         } catch (Exception e) {
-            Log.e(TAG, e.getMessage());
-        }
-        return null;
-    }
-
-    private String saveImage(Bitmap bmp, String fileName) {
-        File appDir = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/xpcracker");
-        if (!appDir.exists()) {
-            appDir.mkdir();
-        }
-        File file = new File(appDir, fileName);
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            bmp.compress(Bitmap.CompressFormat.JPEG, 40, fos);
-            fos.flush();
-            fos.close();
-            Log.d(TAG, "success save image: " + file.getAbsolutePath());
-            return file.getAbsolutePath();
-        } catch (IOException e) {
             Log.e(TAG, e.getMessage());
         }
         return null;
@@ -261,13 +237,13 @@ public class AlipayQR {
 
     private void notifyFailed(){
         if(mCallback != null){
-            mCallback.codeGenerated(false, null);
+            mCallback.qrCodeGenerated(false, null);
         }
     }
 
     private void notifySuccess(String path){
         if(mCallback != null){
-            mCallback.codeGenerated(true, path);
+            mCallback.qrCodeGenerated(true, path);
         }
     }
 }

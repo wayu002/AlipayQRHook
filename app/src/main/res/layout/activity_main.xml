@@ -26,12 +26,21 @@
         android:hint="请输入金额"
         android:textColor="@android:color/black"/>
     <Button
-        android:id="@+id/gen_qr"
+        android:id="@+id/ali_gen_qr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="10dp"
         android:textSize="13sp"
         android:layout_marginTop="50dp"
         android:layout_gravity="center"
-        android:text="生成二维码"/>
+        android:text="生成支付宝二维码"/>
+    <Button
+        android:id="@+id/we_gen_qr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:textSize="13sp"
+        android:layout_marginTop="50dp"
+        android:layout_gravity="center"
+        android:text="生成微信二维码"/>
 </LinearLayout>

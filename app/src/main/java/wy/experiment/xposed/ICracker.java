@@ -7,4 +7,5 @@ package wy.experiment.xposed;
 public interface ICracker {
     void handleLoadPackage(ClassLoader loader) throws Throwable;
     boolean isReadyForUse();
+    IQR getQR();
 }
