@@ -3,7 +3,8 @@
 AlipayQRHook
 ------
 
-[破解过程可以参考](https://www.52pojie.cn/thread-821871-1-1.html)
+[破解过程可以参考，支付宝的](https://www.52pojie.cn/thread-821871-1-1.html)
+[微信6.6.7的](https://www.52pojie.cn/forum.php?mod=viewthread&tid=823709&page=1#pid22661279)
 
 说明
 ------
